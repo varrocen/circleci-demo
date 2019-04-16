@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  database:
+    image: postgres:11.2-alpine
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: circlecidemo
+      POSTGRES_USER: circlecidemo
+      POSTGRES_PASSWORD: circlecidemo
