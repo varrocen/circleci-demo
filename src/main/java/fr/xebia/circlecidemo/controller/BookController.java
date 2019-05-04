@@ -35,15 +35,6 @@ public class BookController {
         return bookRepository.findByAuthorId(authorId);
     }
 
-    @PostMapping("/authors/{authorId}/books")
-    Book newBook(@RequestBody Book newBook, @PathVariable Long authorId) {
-        Author author = authorRepository.findById(authorId)
-                .orElseThrow(() -> new AuthorNotFoundException(authorId));
-
-        newBook.setAuthor(author);
-        return bookRepository.save(newBook);
-    }
-
     @PutMapping("/authors/{authorId}/books/{bookId}")
     Book replaceBook(@RequestBody Book newBook, @PathVariable Long authorId, @PathVariable Long bookId) {
         Author author = authorRepository.findById(authorId)

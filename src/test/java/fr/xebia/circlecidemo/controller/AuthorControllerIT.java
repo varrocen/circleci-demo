@@ -31,25 +31,11 @@ public class AuthorControllerIT {
                 .then()
                 .log().ifValidationFails()
                 .assertThat()
-                .body("size()", equalTo(2))
+                .body("size()", equalTo(3))
                 .body("[0].firstName", equalTo("Terry"))
                 .body("[0].lastName", equalTo("Pratchett"))
                 .body("[1].firstName", equalTo("Neil"))
                 .body("[1].lastName", equalTo("Gaiman"));
-    }
-
-    @Test
-    public void should_post_author() {
-        given()
-                .port(port)
-                .body(toJson(new Author("Howard Phillips", "Lovecraft")))
-                .contentType(JSON)
-                .when().post("/authors")
-                .then()
-                .log().ifValidationFails()
-                .assertThat()
-                .body("firstName", equalTo("Howard Phillips"))
-                .body("lastName", equalTo("Lovecraft"));
     }
 
     @Test
@@ -70,7 +56,7 @@ public class AuthorControllerIT {
                 .port(port)
                 .body(toJson(new Author("Howard Phillips", "Lovecraft")))
                 .contentType(JSON)
-                .when().put("/authors/3")
+                .when().put("/authors/4")
                 .then()
                 .log().ifValidationFails()
                 .assertThat()
@@ -97,7 +83,7 @@ public class AuthorControllerIT {
     public void should_delete_author() {
         given()
                 .port(port)
-                .when().delete("/authors/2")
+                .when().delete("/authors/3")
                 .then()
                 .log().ifValidationFails()
                 .assertThat()

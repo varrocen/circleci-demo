@@ -42,21 +42,6 @@ public class BookControllerTest {
     }
 
     @Test
-    public void should_fail_to_create_book_if_author_is_not_exist() {
-        // given
-        Book newBook = new Book();
-        Long authorId = 1L;
-        when(authorRepository.findById(authorId)).thenReturn(Optional.empty());
-
-        // when
-        Throwable thrown = catchThrowable(() -> bookController.newBook(newBook, authorId));
-
-        // then
-        assertThat(thrown).isInstanceOf(AuthorNotFoundException.class)
-                .hasMessageContaining("Could not find author " + authorId);
-    }
-
-    @Test
     public void should_fail_to_create_or_update_book_if_author_is_not_exist() {
         // given
         Book newBook = new Book();

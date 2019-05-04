@@ -1,1 +1,3 @@
-TRUNCATE book, author;
+TRUNCATE TABLE book CASCADE;
+TRUNCATE TABLE author CASCADE;
+

@@ -20,11 +20,6 @@ public class AuthorController {
         return authorRepository.findAll();
     }
 
-    @PostMapping("/authors")
-    Author newAuthor(@RequestBody Author newAuthor) {
-        return authorRepository.save(newAuthor);
-    }
-
     @GetMapping("/authors/{id}")
     Author one(@PathVariable Long id) {
         return authorRepository.findById(id)

@@ -1,6 +1,5 @@
 package fr.xebia.circlecidemo.controller;
 
-import fr.xebia.circlecidemo.domain.Author;
 import fr.xebia.circlecidemo.domain.Book;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,21 +65,6 @@ public class BookControllerIT {
                 .body("[0].title", equalTo("La Huitième Couleur"))
                 .body("[0].publicationDate", equalTo("1983"))
                 .body("[0].author.name", equalTo("Terry Pratchett"));
-    }
-
-    @Test
-    public void should_post_book() {
-        given()
-                .port(port)
-                .body(toJson(new Book("Le Huitième Sortilège", "1986")))
-                .contentType(JSON)
-                .when().post("/authors/1/books")
-                .then()
-                .log().ifValidationFails()
-                .assertThat()
-                .body("title", equalTo("Le Huitième Sortilège"))
-                .body("publicationDate", equalTo("1986"))
-                .body("author.name", equalTo("Terry Pratchett"));
     }
 
     @Test
