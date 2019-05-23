@@ -20,9 +20,9 @@ commands:
     steps:
       - run: |
           pwd
-          ls -la
-          ls -laR target/
           ls ~
+          ls -la
+          ls -la target/
 
 jobs:
   build:
@@ -40,6 +40,14 @@ jobs:
           paths:
             - ~/.m2
           key: maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
+      - run:
+          name: Save artifacts
+          command: |
+            mkdir -p ~/artifacts/
+            find . -type f -regex ".*/target/.*jar" -exec cp {} ~/artifacts/ \;
+          when: always
+      - store_artifacts:
+          path: ~/artifacts
       - debug
       - persist_to_workspace:
           root: .
@@ -82,15 +90,7 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
-      - run:
-          name: Save artifacts
-          command: |
-            mkdir -p ~/artifacts/
-            find . -type f -regex ".*/target/.*jar" -exec cp {} ~/artifacts/target/ \;
-          when: always
       - debug
-      - store_artifacts:
-          path: ~/artifacts
 
 workflows:
   version: 2
