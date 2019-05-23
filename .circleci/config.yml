@@ -15,15 +15,6 @@ executors:
           POSTGRES_PASSWORD: circlecidemo
     working_directory: ~/circleci-demo
 
-commands:
-  debug:
-    steps:
-      - run: |
-          pwd
-          ls -la
-          ls -la target/
-          ls target/surefire-reports
-
 jobs:
   build:
     executor: docker-jdk
@@ -84,10 +75,9 @@ jobs:
           at: .
       - restore_cache:
           keys:
-            - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
-            - maven-repo-v1-{{ .Branch }}-
-            - maven-repo-v1-
-      - debug
+            - sonar-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
+            - sonar-v1-{{ .Branch }}-
+            - sonar-v1-
       - run:
           name: Sonar analysis
           command: |
@@ -96,13 +86,17 @@ jobs:
               -Dsonar.organization=${SONAR_ORGANIZATION} \
               -Dsonar.host.url=${SONAR_HOST} \
               -Dsonar.login=${SONAR_LOGIN}
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/.sonar/cache
+          key: sonar-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
   deploy:
     executor: docker-jdk
     steps:
       - checkout
       - attach_workspace:
           at: .
-      - debug
 
 workflows:
   version: 2
