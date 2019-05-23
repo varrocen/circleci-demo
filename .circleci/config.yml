@@ -20,7 +20,6 @@ commands:
     steps:
       - run: |
           pwd
-          ls ~
           ls -la
           ls -la target/
 
@@ -48,7 +47,6 @@ jobs:
           when: always
       - store_artifacts:
           path: ~/artifacts
-      - debug
       - persist_to_workspace:
           root: .
           paths:
@@ -59,6 +57,12 @@ jobs:
       - checkout
       - attach_workspace:
           at: .
+      - restore_cache:
+          keys:
+            - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
+            - maven-repo-v1-{{ .Branch }}-
+            - maven-repo-v1-
+      - debug
       - run: mvn verify
       - run:
           name: Save test results
@@ -66,7 +70,6 @@ jobs:
             mkdir -p ~/test-results/junit/
             find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
           when: always
-      - debug
       - store_test_results:
           path: ~/test-results
   sonar:
