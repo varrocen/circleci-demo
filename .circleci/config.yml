@@ -15,6 +15,15 @@ executors:
           POSTGRES_PASSWORD: circlecidemo
     working_directory: ~/circleci-demo
 
+commands:
+  debug:
+    steps:
+      - run: |
+          pwd
+          ls -la
+          ls -laR target/
+          ls ~
+
 jobs:
   build:
     executor: docker-jdk
@@ -31,6 +40,7 @@ jobs:
           paths:
             - ~/.m2
           key: maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
+      - debug
       - persist_to_workspace:
           root: .
           paths:
@@ -48,6 +58,7 @@ jobs:
             mkdir -p ~/test-results/junit/
             find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
           when: always
+      - debug
       - store_test_results:
           path: ~/test-results
   sonar:
@@ -64,6 +75,7 @@ jobs:
               -Dsonar.organization=${SONAR_ORGANIZATION} \
               -Dsonar.host.url=${SONAR_HOST} \
               -Dsonar.login=${SONAR_LOGIN}
+      - debug
   deploy:
     executor: docker-jdk
     steps:
@@ -76,6 +88,7 @@ jobs:
             mkdir -p ~/artifacts/
             find . -type f -regex ".*/target/.*jar" -exec cp {} ~/artifacts/target/ \;
           when: always
+      - debug
       - store_artifacts:
           path: ~/artifacts
 
