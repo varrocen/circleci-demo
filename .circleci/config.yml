@@ -22,6 +22,7 @@ commands:
           pwd
           ls -la
           ls -la target/
+          ls target/surefire-reports
 
 jobs:
   build:
@@ -62,7 +63,6 @@ jobs:
             - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
             - maven-repo-v1-{{ .Branch }}-
             - maven-repo-v1-
-      - debug
       - run: mvn verify
       - run:
           name: Save test results
@@ -72,12 +72,22 @@ jobs:
           when: always
       - store_test_results:
           path: ~/test-results
+      - persist_to_workspace:
+          root: .
+          paths:
+            - target/*
   sonar:
     executor: docker-jdk
     steps:
       - checkout
       - attach_workspace:
           at: .
+      - restore_cache:
+          keys:
+            - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
+            - maven-repo-v1-{{ .Branch }}-
+            - maven-repo-v1-
+      - debug
       - run:
           name: Sonar analysis
           command: |
@@ -86,7 +96,6 @@ jobs:
               -Dsonar.organization=${SONAR_ORGANIZATION} \
               -Dsonar.host.url=${SONAR_HOST} \
               -Dsonar.login=${SONAR_LOGIN}
-      - debug
   deploy:
     executor: docker-jdk
     steps:
