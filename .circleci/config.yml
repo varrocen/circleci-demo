@@ -14,6 +14,9 @@ executors:
           POSTGRES_USER: circlecidemo
           POSTGRES_PASSWORD: circlecidemo
     working_directory: ~/circleci-demo
+  docker-python:
+    docker:
+      - image: circleci/python:2.7
 
 jobs:
   build:
@@ -92,11 +95,24 @@ jobs:
             - ~/.sonar/cache
           key: sonar-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
   deploy:
-    executor: docker-jdk
+    executor: docker-python
     steps:
       - checkout
       - attach_workspace:
           at: .
+      - run:
+          name: Install awsebcli
+          command: |
+            sudo pip install awsebcli --upgrade
+      - run:
+          name: Create AWS credentials
+          command: |
+            mkdir ~/.aws
+            echo "[profile eb-cli]" > ~/.aws/config
+            echo "aws_access_key_id=${AWS_ACCESS_KEY_ID}" >> ~/.aws/config
+            echo "aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/config
+            chmod 600 ~/.aws/config
+      - run: eb deploy
 
 workflows:
   version: 2
