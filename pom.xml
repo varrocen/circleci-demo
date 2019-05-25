@@ -47,6 +47,7 @@
 	</dependencies>
 
 	<build>
+		<finalName>circleci-demo</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
