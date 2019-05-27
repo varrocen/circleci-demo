@@ -29,19 +29,11 @@ jobs:
             - maven-repo-v1-{{ .Branch }}-
             - maven-repo-v1-
       - run: mvn dependency:go-offline
-      - run: mvn package
+      - run: mvn compile
       - save_cache:
           paths:
             - ~/.m2
           key: maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
-      - run:
-          name: Save artifacts
-          command: |
-            mkdir -p ~/artifacts/
-            find . -type f -regex ".*/target/.*jar" -exec cp {} ~/artifacts/ \;
-          when: always
-      - store_artifacts:
-          path: ~/artifacts
       - persist_to_workspace:
           root: .
           paths:
@@ -113,6 +105,14 @@ jobs:
             echo "aws_secret_access_key=${AWS_SECRET_ACCESS_KEY}" >> ~/.aws/config
             chmod 600 ~/.aws/config
       - run: eb deploy
+      - run:
+          name: Save artifacts
+          command: |
+            mkdir -p ~/artifacts/
+            find . -type f -regex ".*/target/.*jar" -exec cp {} ~/artifacts/ \;
+          when: always
+      - store_artifacts:
+          path: ~/artifacts
 
 workflows:
   version: 2
@@ -127,4 +127,4 @@ workflows:
             - test
       - deploy:
           requires:
-            - sonar
+            - test
