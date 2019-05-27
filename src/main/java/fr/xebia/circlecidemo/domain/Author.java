@@ -43,6 +43,6 @@ public class Author {
     }
 
     public String getName() {
-        return firstName + " " + lastName;
+        return lastName + " " + firstName;
     }
 }
