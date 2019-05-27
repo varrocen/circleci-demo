@@ -125,10 +125,6 @@ workflows:
       - sonar:
           requires:
             - test
-      - deploy-approval:
-          type: approval
-          requires:
-            - sonar
       - deploy:
           requires:
-            - deploy-approval
+            - sonar
