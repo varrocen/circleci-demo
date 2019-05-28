@@ -1,5 +1,33 @@
 version: 2.1
 
+commands:
+  test:
+    parameters:
+      entity:
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
+            - maven-repo-v1-{{ .Branch }}-
+            - maven-repo-v1-
+      - run: mvn -Dtest='**/<< parameters.entity >>*Test,**/<< parameters.entity >>*IT' test
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - persist_to_workspace:
+          root: .
+          paths:
+            - target/surefire-reports/*
+
 executors:
   docker-jdk:
     docker:
@@ -38,54 +66,16 @@ jobs:
           root: .
           paths:
             - target/*
-  test-author:
+  author-test:
     executor: docker-jdk-postgres
     steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - restore_cache:
-          keys:
-            - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
-            - maven-repo-v1-{{ .Branch }}-
-            - maven-repo-v1-
-      - run: mvn -Dtest='**/Author*Test,**/Author*IT' test
-      - run:
-          name: Save test results
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
-      - persist_to_workspace:
-          root: .
-          paths:
-            - target/surefire-reports/*
-  test-book:
+      - test:
+          entity: Author
+  book-test:
     executor: docker-jdk-postgres
     steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - restore_cache:
-          keys:
-            - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
-            - maven-repo-v1-{{ .Branch }}-
-            - maven-repo-v1-
-      - run: mvn -Dtest='**/Book*Test,**/Book*IT' test
-      - run:
-          name: Save test results
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
-      - persist_to_workspace:
-          root: .
-          paths:
-            - target/surefire-reports/*
+      - test:
+          entity: Book
   sonar:
     executor: docker-jdk
     steps:
@@ -143,17 +133,17 @@ workflows:
   build_test_and_deploy:
     jobs:
       - build
-      - test-author:
+      - author-test:
           requires:
             - build
-      - test-book:
+      - book-test:
           requires:
             - build
       - sonar:
           requires:
-            - test-author
-            - test-book
+            - author-test
+            - book-test
       - deploy:
           requires:
-            - test-author
-            - test-book
+            - author-test
+            - book-test
