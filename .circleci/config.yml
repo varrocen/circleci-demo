@@ -126,5 +126,8 @@ workflows:
           requires:
             - test
       - deploy:
+          filters:
+            branches:
+              ignore: /renovate.*/
           requires:
             - test
