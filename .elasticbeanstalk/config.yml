@@ -2,6 +2,8 @@ branch-defaults:
   master:
     environment: circleci-demo-dev
     group_suffix: null
+  sequential-workflow-without-sonar:
+    environment: circleci-demo-dev
 deploy:
   artifact: target/circleci-demo.jar
 global:
