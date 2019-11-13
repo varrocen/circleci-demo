@@ -62,30 +62,6 @@ jobs:
           root: .
           paths:
             - target/*
-  sonar:
-    executor: docker-jdk
-    steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - restore_cache:
-          keys:
-            - sonar-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
-            - sonar-v1-{{ .Branch }}-
-            - sonar-v1-
-      - run:
-          name: Sonar analysis
-          command: |
-            mvn sonar:sonar \
-              -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
-              -Dsonar.organization=${SONAR_ORGANIZATION} \
-              -Dsonar.host.url=${SONAR_HOST} \
-              -Dsonar.login=${SONAR_LOGIN}
-      - save_cache:
-          paths:
-            - ~/.m2
-            - ~/.sonar/cache
-          key: sonar-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
   deploy:
     executor: docker-python
     steps:
@@ -122,9 +98,6 @@ workflows:
       - test:
           requires:
             - build
-      - sonar:
-          requires:
-            - test
       - deploy:
           filters:
             branches:
