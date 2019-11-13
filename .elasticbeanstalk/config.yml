@@ -2,6 +2,9 @@ branch-defaults:
   master:
     environment: circleci-demo-dev
     group_suffix: null
+  parallel-workflow:
+    environment: circleci-demo-dev
+    group_suffix: null
 deploy:
   artifact: target/circleci-demo.jar
 global:

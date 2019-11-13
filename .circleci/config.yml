@@ -1,5 +1,33 @@
 version: 2.1
 
+commands:
+  test:
+    parameters:
+      entity:
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - restore_cache:
+          keys:
+            - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
+            - maven-repo-v1-{{ .Branch }}-
+            - maven-repo-v1-
+      - run: mvn -Dtest='**/<< parameters.entity >>*Test,**/<< parameters.entity >>*IT' test
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results
+      - persist_to_workspace:
+          root: .
+          paths:
+            - target/surefire-reports/*
+
 executors:
   docker-jdk:
     docker:
@@ -29,7 +57,7 @@ jobs:
             - maven-repo-v1-{{ .Branch }}-
             - maven-repo-v1-
       - run: mvn dependency:go-offline
-      - run: mvn compile
+      - run: mvn package -DskipTests
       - save_cache:
           paths:
             - ~/.m2
@@ -38,30 +66,16 @@ jobs:
           root: .
           paths:
             - target/*
-  test:
+  author-test:
     executor: docker-jdk-postgres
     steps:
-      - checkout
-      - attach_workspace:
-          at: .
-      - restore_cache:
-          keys:
-            - maven-repo-v1-{{ .Branch }}-{{ checksum "pom.xml" }}
-            - maven-repo-v1-{{ .Branch }}-
-            - maven-repo-v1-
-      - run: mvn verify
-      - run:
-          name: Save test results
-          command: |
-            mkdir -p ~/test-results/junit/
-            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
-          when: always
-      - store_test_results:
-          path: ~/test-results
-      - persist_to_workspace:
-          root: .
-          paths:
-            - target/*
+      - test:
+          entity: Author
+  book-test:
+    executor: docker-jdk-postgres
+    steps:
+      - test:
+          entity: Book
   sonar:
     executor: docker-jdk
     steps:
@@ -119,15 +133,20 @@ workflows:
   build_test_and_deploy:
     jobs:
       - build
-      - test:
+      - author-test:
+          requires:
+            - build
+      - book-test:
           requires:
             - build
       - sonar:
           requires:
-            - test
+            - author-test
+            - book-test
       - deploy:
           filters:
             branches:
               ignore: /renovate.*/
           requires:
-            - test
+            - author-test
+            - book-test
